@@ -53,7 +53,7 @@ def chercher_extension_base10(num_str, den_str, max_profondeur):
     solution = {"extension": None, "quotient": None}
     extension_trouvee = False
     
-    # Utilisation de la profondeur choisie par l'utilisateur via le curseur
+    # CORRECTION ICI : Remplacement de max_profondeut par max_profondeur
     for niveau in range(1, max_profondeur + 1):
         if evaluer_profondeur_b10("", num_dec_origine, den_dec, niveau, solution):
             extension_trouvee = True
@@ -104,15 +104,15 @@ operateur = st.radio(
 max_profondeur = 6
 if "/" in operateur:
     # Activation exclusive du disjoncteur ZeroFloat pour la division
-    st.info("💡 Mode ZeroFloat activated : Ajustement automatique du numérateur.")
+    st.info("💡 Mode ZeroFloat activé : Ajustement automatique du numérateur.")
     max_profondeur = st.slider("Profondeur d'exploration du disjoncteur (chiffres max après la virgule) :", 1, 15, 6)
 
 # 2. On demande le premier nombre et le deuxième nombre
 col1, col2 = st.columns(2)
 with col1:
-    a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12")
+    a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12", key="num_a_key")
 with col2:
-    b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11")
+    b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11", key="num_b_key")
 
 # Nettoyage des chaînes saisies et vérification numérique stricte
 a_clean = a_saisie.replace(" ", "").replace(",", "")
