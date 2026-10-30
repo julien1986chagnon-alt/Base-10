@@ -38,7 +38,6 @@ def chercher_extension_base10(num_str, den_str, max_profondeur):
     solution = {"extension": None, "quotient": None}
     extension_trouvee = False
     
-    # CORRECTION CRUCIALE : max_profondeur écrit correctement avec un r
     for niveau in range(1, max_profondeur + 1):
         if evaluer_profondeur_b10("", num_dec_origine, den_dec, niveau, solution):
             extension_trouvee = True
@@ -67,27 +66,34 @@ Cette application effectue les opérations standards et intègre un disjoncteur 
 
 st.divider()
 
-operateur = st.selectbox(
-    "Sélectionnez l'opération à effectuer :",
-    ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
-    key="op_select_box"
-)
+# PROTECTION ANTI-BUG : Tout est enfermé dans un formulaire pour figer le rendu visuel
+with st.form(key="calculatrice_form"):
+    
+    operateur = st.selectbox(
+        "Sélectionnez l'opération à effectuer :",
+        ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
+        key="op_select_box"
+    )
 
-max_profondeur = 6
-if "/" in operateur:
-    st.info("💡 Mode ZeroFloat activé : Ajustement automatique du numérateur.")
-    max_profondeur = st.slider("Profondeur d'exploration du disjoncteur (chiffres max après la virgule) :", 1, 15, 6, key="prof_slider")
+    max_profondeur = st.slider(
+        "Profondeur d'exploration du disjoncteur (chiffres max après la virgule) :", 
+        1, 15, 6, 
+        key="prof_slider"
+    )
 
-col1, col2 = st.columns(2)
-with col1:
-    a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12", key="num_a_input")
-with col2:
-    b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11", key="num_b_input")
+    col1, col2 = st.columns(2)
+    with col1:
+        a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12", key="num_a_input")
+    with col2:
+        b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11", key="num_b_input")
 
-a_clean = a_saisie.replace(" ", "").replace(",", "")
-b_clean = b_saisie.replace(" ", "").replace(",", "")
+    # Le bouton du formulaire qui valide tout d'un coup
+    soumis = st.form_submit_button("🚀 Exécuter le calcul", type="primary")
 
-if st.button("🚀 Exécuter le calcul", type="primary", key="btn_calcul"):
+if soumis:
+    a_clean = a_saisie.replace(" ", "").replace(",", "")
+    b_clean = b_saisie.replace(" ", "").replace(",", "")
+
     if not a_clean.isdigit() or not b_clean.isdigit():
         st.error("⚠️ Erreur : Veuillez entrer uniquement des nombres entiers positifs pour l'analyse.")
     else:
