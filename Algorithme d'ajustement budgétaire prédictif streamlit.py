@@ -66,12 +66,11 @@ Cette application effectue les opérations standards et intègre un disjoncteur 
 
 st.divider()
 
-operateur = st.radio(
+# CORRECTION : Utilisation d'une selectbox pour éviter le bug graphique de Streamlit
+operateur = st.selectbox(
     "Sélectionnez l'opération à effectuer :",
-    ["+ (Addition)", "- (Soustraction)", "* (Multiplication)", "/ (Division Confinée)"],
-    index=3,
-    horizontal=True,
-    key="op_select"
+    ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
+    key="op_select_box"
 )
 
 max_profondeur = 6
@@ -125,4 +124,3 @@ if st.button("🚀 Exécuter le calcul", type="primary", key="btn_calcul"):
 
 st.divider()
 st.caption("© 2026 - Suite de Produits Algorithmiques J.C.R.C — Déploiement Agile Streamlit Cloud.")
-
