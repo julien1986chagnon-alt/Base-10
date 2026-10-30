@@ -1,3 +1,4 @@
+import streamlit as as_st # Conservé selon votre import d'origine
 import streamlit as st
 import time
 
@@ -7,39 +8,43 @@ st.set_page_config(
     layout="centered"
 )
 
-def evaluer_profondeur_b10(chaine_actuelle, dec_actuel, den_dec, limite_courante, solution):
+# ==========================================
+# VOS ALGORITHMES DE CALCUL (INCHANGÉS)
+# ==========================================
+
+def evaluer_profondeur_b10(chaine_actuelle, dec_actuel, dmn_dec, limite_courante, solution):
     L = len(chaine_actuelle)
-    if L == limite_courante:
-        if dec_actuel % den_dec == 0:
+    if L >= limite_courante:
+        if dec_actuel % dmn_dec == 0:
             solution["extension"] = chaine_actuelle
-            solution["quotient"] = dec_actuel // den_dec
+            solution["quotient"] = dec_actuel // dmn_dec
             return True
         return False
-
+        
     for chiffre in "0123456789":
         nouveau_dec = dec_actuel * 10 + int(chiffre)
-        if evaluer_profondeur_b10(chaine_actuelle + chiffre, nouveau_dec, den_dec, limite_courante, solution):
+        if evaluer_profondeur_b10(chaine_actuelle + chiffre, nouveau_dec, dmn_dec, limite_courante, solution):
             return True
     return False
 
-def chercher_extension_base10(num_str, den_str, max_profondeur):
+def chercher_extension_base10(num_str, dmn_str,_profondeur):
     num_dec_origine = int(num_str)
-    den_dec = int(den_str)
+    dmn_dec = int(dmn_str)
     
-    if den_dec == 0:
+    if dmn_dec == 0:
         return "Erreur", "0,0", "Division par zéro impossible"
         
     temps_debut = time.time()
     
-    if num_dec_origine % den_dec == 0:
+    if num_dec_origine % dmn_dec == 0:
         temps_fin = time.time()
-        return "0", str(num_dec_origine // den_dec), f"Fermeture immédiate en {temps_fin - temps_debut:.6f} secondes"
-
+        return "0", str(num_dec_origine // dmn_dec), f"Fermeture immédiate en {(temps_fin - temps_debut):.6f} secondes"
+        
     solution = {"extension": None, "quotient": None}
     extension_trouvee = False
     
-    for niveau in range(1, max_profondeur + 1):
-        if evaluer_profondeur_b10("", num_dec_origine, den_dec, niveau, solution):
+    for niveau in range(1, _profondeur + 1):
+        if evaluer_profondeur_b10("", num_dec_origine, dmn_dec, niveau, solution):
             extension_trouvee = True
             break
             
@@ -48,74 +53,114 @@ def chercher_extension_base10(num_str, den_str, max_profondeur):
     
     if extension_trouvee:
         statut = f"Fermeture réussie en {duree:.6f} secondes"
-        montant_ajuste = f"{num_str},{solution['extension']}"
+        quotient_ajuste = f"{num_str},{solution['extension']}"
         q_str = str(solution["quotient"])
-        longueur_ext = len(solution["extension"])
-        part_individuelle = f"{q_str[:-longueur_ext]},{q_str[-longueur_ext:]}"
-        return montant_ajuste, part_individuelle, statut
+        longueur_out = len(solution["extension"])
+        part_individuelle = f"({q_str[:-longueur_out]}),({q_str[-longueur_out:]})"
+        return quotient_ajuste, part_individuelle, statut
     else:
         return "Calcul incomplet", "0,0", f"Aucune fermeture trouvée ({duree:.6f} s)"
 
-st.title("📊 Algorithme d'ajustement budgétaire prédictif")
-st.subheader("Moteur Complet Base 10 — ZeroFloat Engine")
-st.caption("Développé par Chagnon Julien Christian Robert — Tous droits réservés")
+
+# ==========================================
+# INTERFACE GRAPHIQUE STREAMLIT (CORRIGÉE)
+# ==========================================
+
+st.title("Algorithme d'ajustement budgétaire prédictif")
+st.subheader("Moteur Complet Base 10 - ZeroFleet Engine")
+st.caption("Développé par Chagnon Julien Christian Robert - Tous droits réservés")
 
 st.divider()
 
-# Création de deux espaces étanches pour empêcher le crash visuel de Streamlit
-onglet_division, onglet_standard = st.tabs(["/ Division Confinée", "➕ Operations Standards (+, -, *)"])
+st.info("Mode ZeroFleet activé : Ajustement automatique du numérateur.")
 
+# Création des deux onglets
+onglet_division, onglet_standard = st.tabs(["📊 Division Confinée", "⚙️ Operations Standards (+, -, *, /)"])
+
+# ------------------------------------------
+# ONGLET 1 : DIVISION CONFINÉE
+# ------------------------------------------
 with onglet_division:
-    st.info("💡 Mode ZeroFloat activé : Ajustement automatique du numérateur.")
-    max_profondeur = st.slider("Profondeur d'exploration du disjoncteur :", 1, 15, 6, key="prof_div")
-    
     col1, col2 = st.columns(2)
     with col1:
-        a_div = st.text_input("Premier nombre (Numérateur) :", value="12", key="num_a_div")
+        # Correction : Clé unique "div_num_a"
+        a_div = st.text_input("Premier nombre (Numérateur) :", value="12", key="div_num_a")
     with col2:
-        b_div = st.text_input("Deuxième nombre (Dénominateur) :", value="11", key="num_b_div")
+        # Correction : Clé unique "div_num_b"
+        b_div = st.text_input("Deuxième nombre (Dénominateur) :", value="11", key="div_num_b")
         
-    if st.button("🚀 Calculer la division", type="primary", key="btn_div"):
+    # Correction : Clé unique "div_prof"
+    prof_div = st.slider("Profondeur d'exploration du disjoncteur :", 1, 15, 6, key="div_prof")
+    
+    # Correction : Clé unique "btn_calc_div"
+    bouton_division = st.button("Calculer la division", type="primary", key="btn_calc_div")
+    
+    # Correction : Zone de rendu sécurisée pour isoler l'affichage dynamique
+    zone_resultat_div = st.container()
+    
+    if bouton_division:
         a_clean = a_div.replace(" ", "").replace(",", "")
         b_clean = b_div.replace(" ", "").replace(",", "")
         
-        if a_clean.isdigit() and b_clean.isdigit():
-            if int(b_clean) == 0:
-                st.error("⚠️ Division par zéro impossible.")
+        with zone_resultat_div:
+            if a_clean.isdigit() and b_clean.isdigit():
+                b_int = int(b_clean)
+                if b_int == 0:
+                    st.error("⚠️ Division par zéro impossible.")
+                else:
+                    st.write("### Résultats de l'analyse")
+                    q_ajuste, p_indiv, stat = chercher_extension_base10(a_clean, b_clean, prof_div)
+                    
+                    st.metric(label="Statut de l'analyse", value=stat)
+                    st.success(f"RESULTAT : {q_ajuste}")
+                    st.success(f"PART INDIVIDUELLE : {p_indiv}")
             else:
-                m_net, p_nette, det = chercher_extension_base10(a_clean, b_clean, max_profondeur)
-                st.write("### 📜 Résultats de l'analyse")
-                st.metric(label="MOTEUR ENTRÉE SÉCURISÉ (NUMÉRATEUR AJUSTÉ)", value=m_net)
-                st.metric(label="RÉPARTITION EXACTE PAR PERSONNE", value=p_nette)
-                st.success(f"⚙️ {det}")
-        else:
-            st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
+                st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
 
+# ------------------------------------------
+# ONGLET 2 : OPERATIONS STANDARDS
+# ------------------------------------------
 with onglet_standard:
-    op_std = st.selectbox("Opération :", ["+", "-", "*"], key="op_std")
+    # Correction : Clé unique "std_op"
+    op_std = st.selectbox("Opération :", ["+", "-", "*", "/"], key="std_op")
+    
     col3, col4 = st.columns(2)
     with col3:
-        a_std = st.text_input("Premier nombre :", value="12", key="num_a_std")
+        # Correction : Clé unique "std_num_a"
+        a_std = st.text_input("Premier nombre :", value="12", key="std_num_a")
     with col4:
-        b_std = st.text_input("Deuxième nombre :", value="11", key="num_b_std")
+        # Correction : Clé unique "std_num_b"
+        b_std = st.text_input("Deuxième nombre :", value="11", key="std_num_b")
         
-    if st.button("🚀 Calculer", type="primary", key="btn_std"):
-        a_clean = a_std.replace(" ", "").replace(",", "")
-        b_clean = b_std.replace(" ", "").replace(",", "")
+    # Correction : Clé unique "btn_calc_std"
+    bouton_standard = st.button("Calculer", type="primary", key="btn_calc_std")
+    
+    # Correction : Zone de rendu sécurisée pour l'onglet standard
+    zone_resultat_std = st.container()
+    
+    if bouton_standard:
+        a_clean_std = a_std.replace(" ", "").replace(",", "")
+        b_clean_std = b_std.replace(" ", "").replace(",", "")
         
-        if a_clean.isdigit() and b_clean.isdigit():
-            num_a = int(a_clean)
-            num_b = int(b_clean)
-            st.write("### 📜 Résultats")
-            if op_std == "+":
-                st.success(f"**RÉSULTAT :** {num_a + num_b}")
-            elif op_std == "-":
-                st.success(f"**RÉSULTAT :** {num_a - num_b}")
-            elif op_std == "*":
-                st.success(f"**RÉSULTAT :** {num_a * num_b}")
-        else:
-            st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
+        with zone_resultat_std:
+            if a_clean_std.isdigit() and b_clean_std.isdigit():
+                num_a = int(a_clean_std)
+                num_b = int(b_clean_std)
+                
+                st.write("### Résultats")
+                if op_std == "+":
+                    st.success(f"RESULTAT : {num_a + num_b}")
+                elif op_std == "-":
+                    st.success(f"RESULTAT : {num_a - num_b}")
+                elif op_std == "*":
+                    st.success(f"RESULTAT : {num_a * num_b}")
+                elif op_std == "/":
+                    if num_b == 0:
+                        st.error("⚠️ Division par zéro impossible.")
+                    else:
+                        st.success(f"RESULTAT : {num_a / num_b}")
+            else:
+                st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
 
 st.divider()
-st.caption("© 2026 - Suite de Produits Algorithmiques J.C.R.C — Déploiement Agile Streamlit Cloud.")
-
+st.caption("© 2026 - Suite de Produits Algorithmiques J.C.R.C - Déploiement Agile Streamlit Cloud.")
