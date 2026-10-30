@@ -38,6 +38,7 @@ def chercher_extension_base10(num_str, den_str, max_profondeur):
     solution = {"extension": None, "quotient": None}
     extension_trouvee = False
     
+    # CORRECTION CRUCIALE : max_profondeur écrit correctement avec un r
     for niveau in range(1, max_profondeur + 1):
         if evaluer_profondeur_b10("", num_dec_origine, den_dec, niveau, solution):
             extension_trouvee = True
@@ -66,7 +67,6 @@ Cette application effectue les opérations standards et intègre un disjoncteur 
 
 st.divider()
 
-# CORRECTION : Utilisation d'une selectbox pour éviter le bug graphique de Streamlit
 operateur = st.selectbox(
     "Sélectionnez l'opération à effectuer :",
     ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
