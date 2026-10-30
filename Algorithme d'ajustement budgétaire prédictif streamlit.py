@@ -8,6 +8,12 @@ st.set_page_config(
     layout="centered"
 )
 
+# Initialisation des variables d'état
+if "calc_triggered" not in st.session_state:
+    st.session_state.calc_triggered = False
+    st.session_state.calc_type = None
+    st.session_state.res_data = {}
+
 # ==========================================
 # VOS ALGORITHMES DE CALCUL (INCHANGÉS)
 # ==========================================
@@ -27,7 +33,7 @@ def evaluer_profondeur_b10(chaine_actuelle, dec_actuel, dmn_dec, limite_courante
             return True
     return False
 
-def chercher_extension_base10(num_str, dmn_str,_profondeur):
+def chercher_extension_base10(num_str, dmn_str, _profondeur):
     num_dec_origine = int(num_str)
     dmn_dec = int(dmn_str)
     
@@ -63,7 +69,7 @@ def chercher_extension_base10(num_str, dmn_str,_profondeur):
 
 
 # ==========================================
-# INTERFACE GRAPHIQUE STREAMLIT (CORRIGÉE)
+# INTERFACE GRAPHIQUE STREAMLIT TRADUCTION-SAFE
 # ==========================================
 
 st.title("Algorithme d'ajustement budgétaire prédictif")
@@ -71,96 +77,88 @@ st.subheader("Moteur Complet Base 10 - ZeroFleet Engine")
 st.caption("Développé par Chagnon Julien Christian Robert - Tous droits réservés")
 
 st.divider()
-
 st.info("Mode ZeroFleet activé : Ajustement automatique du numérateur.")
 
-# Création des deux onglets
 onglet_division, onglet_standard = st.tabs(["📊 Division Confinée", "⚙️ Operations Standards (+, -, *, /)"])
 
-# ------------------------------------------
-# ONGLET 1 : DIVISION CONFINÉE
-# ------------------------------------------
+# --- ONGLET 1 : DIVISION CONFINÉE ---
 with onglet_division:
     col1, col2 = st.columns(2)
     with col1:
-        # Correction : Clé unique "div_num_a"
         a_div = st.text_input("Premier nombre (Numérateur) :", value="12", key="div_num_a")
     with col2:
-        # Correction : Clé unique "div_num_b"
         b_div = st.text_input("Deuxième nombre (Dénominateur) :", value="11", key="div_num_b")
         
-    # Correction : Clé unique "div_prof"
     prof_div = st.slider("Profondeur d'exploration du disjoncteur :", 1, 15, 6, key="div_prof")
     
-    # Correction : Clé unique "btn_calc_div"
-    bouton_division = st.button("Calculer la division", type="primary", key="btn_calc_div")
-    
-    # Correction : Zone de rendu sécurisée pour isoler l'affichage dynamique
-    zone_resultat_div = st.container()
-    
-    if bouton_division:
-        a_clean = a_div.replace(" ", "").replace(",", "")
-        b_clean = b_div.replace(" ", "").replace(",", "")
-        
-        with zone_resultat_div:
-            if a_clean.isdigit() and b_clean.isdigit():
-                b_int = int(b_clean)
-                if b_int == 0:
-                    st.error("⚠️ Division par zéro impossible.")
-                else:
-                    st.write("### Résultats de l'analyse")
-                    q_ajuste, p_indiv, stat = chercher_extension_base10(a_clean, b_clean, prof_div)
-                    
-                    st.metric(label="Statut de l'analyse", value=stat)
-                    st.success(f"RESULTAT : {q_ajuste}")
-                    st.success(f"PART INDIVIDUELLE : {p_indiv}")
-            else:
-                st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
+    if st.button("Calculer la division", type="primary", key="btn_calc_div"):
+        st.session_state.calc_triggered = True
+        st.session_state.calc_type = "division"
+        st.session_state.res_data = {"a": a_div, "b": b_div, "prof": prof_div}
 
-# ------------------------------------------
-# ONGLET 2 : OPERATIONS STANDARDS
-# ------------------------------------------
+# --- ONGLET 2 : OPERATIONS STANDARDS ---
 with onglet_standard:
-    # Correction : Clé unique "std_op"
     op_std = st.selectbox("Opération :", ["+", "-", "*", "/"], key="std_op")
     
     col3, col4 = st.columns(2)
     with col3:
-        # Correction : Clé unique "std_num_a"
         a_std = st.text_input("Premier nombre :", value="12", key="std_num_a")
     with col4:
-        # Correction : Clé unique "std_num_b"
         b_std = st.text_input("Deuxième nombre :", value="11", key="std_num_b")
         
-    # Correction : Clé unique "btn_calc_std"
-    bouton_standard = st.button("Calculer", type="primary", key="btn_calc_std")
-    
-    # Correction : Zone de rendu sécurisée pour l'onglet standard
-    zone_resultat_std = st.container()
-    
-    if bouton_standard:
-        a_clean_std = a_std.replace(" ", "").replace(",", "")
-        b_clean_std = b_std.replace(" ", "").replace(",", "")
-        
-        with zone_resultat_std:
-            if a_clean_std.isdigit() and b_clean_std.isdigit():
-                num_a = int(a_clean_std)
-                num_b = int(b_clean_std)
-                
-                st.write("### Résultats")
-                if op_std == "+":
-                    st.success(f"RESULTAT : {num_a + num_b}")
-                elif op_std == "-":
-                    st.success(f"RESULTAT : {num_a - num_b}")
-                elif op_std == "*":
-                    st.success(f"RESULTAT : {num_a * num_b}")
-                elif op_std == "/":
-                    if num_b == 0:
-                        st.error("⚠️ Division par zéro impossible.")
-                    else:
-                        st.success(f"RESULTAT : {num_a / num_b}")
-            else:
-                st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
+    if st.button("Calculer", type="primary", key="btn_calc_std"):
+        st.session_state.calc_triggered = True
+        st.session_state.calc_type = "standard"
+        st.session_state.res_data = {"a": a_std, "b": b_std, "op": op_std}
 
+# ==========================================
+# ZONE RÉSULTATS IMPERMÉABLE AUX BUGS DOM
+# ==========================================
 st.divider()
+
+if st.session_state.calc_triggered:
+    data = st.session_state.res_data
+    a_clean = data["a"].replace(" ", "").replace(",", "")
+    b_clean = data["b"].replace(" ", "").replace(",", "")
+    
+    st.write("### Résultats de l'analyse")
+    
+    if not (a_clean.isdigit() and b_clean.isdigit()):
+        # Utilisation de balises HTML avec protection de traduction pour isoler le message
+        st.markdown('<div translate="no" style="color:#ff4b4b; padding:10px; border-radius:5px; background-color:rgba(255,75,75,0.1)">⚠️ Veuillez entrer uniquement des nombres entiers positifs.</div>', unsafe_allow_html=True)
+    else:
+        # Traitement Onglet 1
+        if st.session_state.calc_type == "division":
+            b_int = int(b_clean)
+            if b_int == 0:
+                st.markdown('<div translate="no" style="color:#ff4b4b; padding:10px; border-radius:5px; background-color:rgba(255,75,75,0.1)">⚠️ Division par zéro impossible.</div>', unsafe_allow_html=True)
+            else:
+                q_ajuste, p_indiv, stat = chercher_extension_base10(a_clean, b_clean, data["prof"])
+                
+                # Encapsulation stricte pour bloquer les interférences de Google Traduction
+                st.markdown(f'<div translate="no" style="padding:10px; background:#f0f2f6; border-radius:5px; margin-bottom:10px;"><strong>Statut :</strong> {stat}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div translate="no" style="color:#09ab3b; padding:10px; border-radius:5px; background-color:rgba(9,171,59,0.1); margin-bottom:10px;"><strong>RESULTAT :</strong> {q_ajuste}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div translate="no" style="color:#09ab3b; padding:10px; border-radius:5px; background-color:rgba(9,171,59,0.1);"><strong>PART INDIVIDUELLE :</strong> {p_indiv}</div>', unsafe_allow_html=True)
+                
+        # Traitement Onglet 2
+        elif st.session_state.calc_type == "standard":
+            num_a = int(a_clean)
+            num_b = int(b_clean)
+            op = data["op"]
+            
+            res_val = 0
+            if op == "+": res_val = num_a + num_b
+            elif op == "-": res_val = num_a - num_b
+            elif op == "*": res_val = num_a * num_b
+            elif op == "/":
+                if num_b == 0:
+                    st.markdown('<div translate="no" style="color:#ff4b4b; padding:10px; border-radius:5px; background-color:rgba(255,75,75,0.1)">⚠️ Division par zéro impossible.</div>', unsafe_allow_html=True)
+                    res_val = None
+                else:
+                    res_val = num_a / num_b
+            
+            if res_val is not None:
+                st.markdown(f'<div translate="no" style="color:#09ab3b; padding:10px; border-radius:5px; background-color:rgba(9,171,59,0.1)"><strong>RESULTAT :</strong> {res_val}</div>', unsafe_allow_html=True)
+
 st.caption("© 2026 - Suite de Produits Algorithmiques J.C.R.C - Déploiement Agile Streamlit Cloud.")
+
