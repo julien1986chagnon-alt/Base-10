@@ -56,94 +56,65 @@ def chercher_extension_base10(num_str, den_str, max_profondeur):
     else:
         return "Calcul incomplet", "0,0", f"Aucune fermeture trouvée ({duree:.6f} s)"
 
-# Initialisation sécurisée des variables d'état pour bloquer les conflits de rafraîchissement
-if "calcul_execute" not in st.session_state:
-    st.session_state.calcul_execute = False
-    st.session_state.montant_net = ""
-    st.session_state.part_nette = ""
-    st.session_state.details = ""
-    st.session_state.resultat_standard = ""
-    st.session_state.type_op = ""
-
 st.title("📊 Algorithme d'ajustement budgétaire prédictif")
 st.subheader("Moteur Complet Base 10 — ZeroFloat Engine")
 st.caption("Développé par Chagnon Julien Christian Robert — Tous droits réservés")
 
-st.markdown("""
-Cette application effectue les opérations standards et intègre un disjoncteur logique anti-infini exclusif pour la division.
-""")
-
 st.divider()
 
-# Bloc des contrôles
-operateur = st.selectbox(
-    "Sélectionnez l'opération à effectuer :",
-    ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
-    key="op_select_box"
-)
+# Création de deux espaces étanches pour empêcher le crash visuel de Streamlit
+onglet_division, onglet_standard = st.tabs(["/ Division Confinée", "➕ Operations Standards (+, -, *)"])
 
-max_profondeur = 6
-if "/" in operateur:
+with onglet_division:
     st.info("💡 Mode ZeroFloat activé : Ajustement automatique du numérateur.")
-    max_profondeur = st.slider("Profondeur d'exploration du disjoncteur (chiffres max après la virgule) :", 1, 15, 6, key="prof_slider")
-
-col1, col2 = st.columns(2)
-with col1:
-    a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12", key="num_a_input")
-with col2:
-    b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11", key="num_b_input")
-
-a_clean = a_saisie.replace(" ", "").replace(",", "")
-b_clean = b_saisie.replace(" ", "").replace(",", "")
-
-# Traitement de l'action utilisateur de façon déconnectée du rendu graphique direct
-if st.button("🚀 Exécuter le calcul", type="primary", key="btn_calcul"):
-    if not a_clean.isdigit() or not b_clean.isdigit():
-        st.error("⚠️ Erreur : Veuillez entrer uniquement des nombres entiers positifs pour l'analyse.")
-        st.session_state.calcul_execute = False
-    else:
-        num_a = int(a_clean)
-        num_b = int(b_clean)
-        st.session_state.calcul_execute = True
-        
-        if "+" in operateur:
-            st.session_state.type_op = "add"
-            st.session_state.resultat_standard = str(num_a + num_b)
-        elif "-" in operateur:
-            st.session_state.type_op = "sub"
-            st.session_state.resultat_standard = str(num_a - num_b)
-        elif "*" in operateur:
-            st.session_state.type_op = "mul"
-            st.session_state.resultat_standard = str(num_a * num_b)
-        elif "/" in operateur:
-            if num_b == 0:
-                st.error("⚠️ Division par zéro impossible.")
-                st.session_state.calcul_execute = False
-            else:
-                st.session_state.type_op = "div"
-                m_net, p_nette, det = chercher_extension_base10(a_clean, b_clean, max_profondeur)
-                st.session_state.montant_net = m_net
-                st.session_state.part_nette = p_nette
-                st.session_state.details = det
-
-# Affichage des résultats basé UNIQUEMENT sur l'état mémorisé (Prévient mécaniquement l'erreur removeChild)
-if st.session_state.calcul_execute:
-    st.write("### 📜 Résultats de l'analyse")
+    max_profondeur = st.slider("Profondeur d'exploration du disjoncteur :", 1, 15, 6, key="prof_div")
     
-    if st.session_state.type_op == "add":
-        st.success(f"**RÉSULTAT DE L'ADDITION :** {st.session_state.resultat_standard}")
-    elif st.session_state.type_op == "sub":
-        st.success(f"**RÉSULTAT DE LA SOUSTRACTION :** {st.session_state.resultat_standard}")
-    elif st.session_state.type_op == "mul":
-        st.success(f"**RÉSULTAT DE LA MULTIPLICATION :** {st.session_state.resultat_standard}")
-    elif st.session_state.type_op == "div":
-        st.metric(label="MOTEUR ENTRÉE SÉCURISÉ (NUMÉRATEUR AJUSTÉ)", value=st.session_state.montant_net)
-        st.metric(label="RÉPARTITION EXACTE PAR PERSONNE", value=st.session_state.part_nette)
+    col1, col2 = st.columns(2)
+    with col1:
+        a_div = st.text_input("Premier nombre (Numérateur) :", value="12", key="num_a_div")
+    with col2:
+        b_div = st.text_input("Deuxième nombre (Dénominateur) :", value="11", key="num_b_div")
         
-        if "Fermeture réussie" in st.session_state.details:
-            st.success(f"⚙️ **STATUT DU DISJONCTEUR :** {st.session_state.details}")
+    if st.button("🚀 Calculer la division", type="primary", key="btn_div"):
+        a_clean = a_div.replace(" ", "").replace(",", "")
+        b_clean = b_div.replace(" ", "").replace(",", "")
+        
+        if a_clean.isdigit() and b_clean.isdigit():
+            if int(b_clean) == 0:
+                st.error("⚠️ Division par zéro impossible.")
+            else:
+                m_net, p_nette, det = chercher_extension_base10(a_clean, b_clean, max_profondeur)
+                st.write("### 📜 Résultats de l'analyse")
+                st.metric(label="MOTEUR ENTRÉE SÉCURISÉ (NUMÉRATEUR AJUSTÉ)", value=m_net)
+                st.metric(label="RÉPARTITION EXACTE PAR PERSONNE", value=p_nette)
+                st.success(f"⚙️ {det}")
         else:
-            st.warning(f"⚙️ **STATUT DU DISJONCTEUR :** {st.session_state.details}")
+            st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
+
+with onglet_standard:
+    op_std = st.selectbox("Opération :", ["+", "-", "*"], key="op_std")
+    col3, col4 = st.columns(2)
+    with col3:
+        a_std = st.text_input("Premier nombre :", value="12", key="num_a_std")
+    with col4:
+        b_std = st.text_input("Deuxième nombre :", value="11", key="num_b_std")
+        
+    if st.button("🚀 Calculer", type="primary", key="btn_std"):
+        a_clean = a_std.replace(" ", "").replace(",", "")
+        b_clean = b_std.replace(" ", "").replace(",", "")
+        
+        if a_clean.isdigit() and b_clean.isdigit():
+            num_a = int(a_clean)
+            num_b = int(b_clean)
+            st.write("### 📜 Résultats")
+            if op_std == "+":
+                st.success(f"**RÉSULTAT :** {num_a + num_b}")
+            elif op_std == "-":
+                st.success(f"**RÉSULTAT :** {num_a - num_b}")
+            elif op_std == "*":
+                st.success(f"**RÉSULTAT :** {num_a * num_b}")
+        else:
+            st.error("⚠️ Veuillez entrer uniquement des nombres entiers positifs.")
 
 st.divider()
 st.caption("© 2026 - Suite de Produits Algorithmiques J.C.R.C — Déploiement Agile Streamlit Cloud.")
