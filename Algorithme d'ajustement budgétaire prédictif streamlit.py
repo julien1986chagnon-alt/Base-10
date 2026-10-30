@@ -66,67 +66,66 @@ Cette application effectue les opérations standards et intègre un disjoncteur 
 
 st.divider()
 
-# PROTECTION ANTI-BUG : Tout est enfermé dans un formulaire pour figer le rendu visuel
-with st.form(key="calculatrice_form"):
-    
-    operateur = st.selectbox(
-        "Sélectionnez l'opération à effectuer :",
-        ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
-        key="op_select_box"
-    )
+operateur = st.selectbox(
+    "Sélectionnez l'opération à effectuer :",
+    ["/ (Division Confinée)", "+ (Addition)", "- (Soustraction)", "* (Multiplication)"],
+    key="op_select_box"
+)
 
-    max_profondeur = st.slider(
-        "Profondeur d'exploration du disjoncteur (chiffres max après la virgule) :", 
-        1, 15, 6, 
-        key="prof_slider"
-    )
+max_profondeur = 6
+if "/" in operateur:
+    st.info("💡 Mode ZeroFloat activé : Ajustement automatique du numérateur.")
+    max_profondeur = st.slider("Profondeur d'exploration du disjoncteur (chiffres max après la virgule) :", 1, 15, 6, key="prof_slider")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12", key="num_a_input")
-    with col2:
-        b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11", key="num_b_input")
+col1, col2 = st.columns(2)
+with col1:
+    a_saisie = st.text_input("Premier nombre (Numérateur - ex: 12) :", value="12", key="num_a_input")
+with col2:
+    b_saisie = st.text_input("Deuxième nombre (Dénominateur - ex: 11) :", value="11", key="num_b_input")
 
-    # Le bouton du formulaire qui valide tout d'un coup
-    soumis = st.form_submit_button("🚀 Exécuter le calcul", type="primary")
+# ZONE DE SÉCURITÉ : Conteneur fixe pré-généré pour bloquer l'erreur removeChild
+zone_resultat = st.container()
 
-if soumis:
+if st.button("🚀 Exécuter le calcul", type="primary", key="btn_calcul"):
     a_clean = a_saisie.replace(" ", "").replace(",", "")
     b_clean = b_saisie.replace(" ", "").replace(",", "")
 
-    if not a_clean.isdigit() or not b_clean.isdigit():
-        st.error("⚠️ Erreur : Veuillez entrer uniquement des nombres entiers positifs pour l'analyse.")
-    else:
-        num_a = int(a_clean)
-        num_b = int(b_clean)
-        
-        st.write("### 📜 Résultats de l'analyse")
-        
-        if "+" in operateur:
-            res = num_a + num_b
-            st.success(f"**RÉSULTAT DE L'ADDITION :** {res}")
+    # On injecte tout le rendu dans le conteneur fixe prédéfini
+    with zone_resultat:
+        if not a_clean.isdigit() or not b_clean.isdigit():
+            st.error("⚠️ Erreur : Veuillez entrer uniquement des nombres entiers positifs pour l'analyse.")
+        else:
+            num_a = int(a_clean)
+            num_b = int(b_clean)
             
-        elif "-" in operateur:
-            res = num_a - num_b
-            st.success(f"**RÉSULTAT DE LA SOUSTRACTION :** {res}")
+            st.write("### 📜 Résultats de l'analyse")
             
-        elif "*" in operateur:
-            res = num_a * num_b
-            st.success(f"**RÉSULTAT DE LA MULTIPLICATION :** {res}")
-            
-        elif "/" in operateur:
-            if num_b == 0:
-                st.error("⚠️ Division par zéro impossible.")
-            else:
-                montant_net, part_nette, details = chercher_extension_base10(a_clean, b_clean, max_profondeur)
+            if "+" in operateur:
+                res = num_a + num_b
+                st.success(f"**RÉSULTAT DE L'ADDITION :** {res}")
                 
-                st.metric(label="MOTEUR ENTRÉE SÉCURISÉ (NUMÉRATEUR AJUSTÉ)", value=montant_net)
-                st.metric(label="RÉPARTITION EXACTE PAR PERSONNE", value=part_nette)
+            elif "-" in operateur:
+                res = num_a - num_b
+                st.success(f"**RÉSULTAT DE LA SOUSTRACTION :** {res}")
                 
-                if "Fermeture réussie" in details:
-                    st.success(f"⚙️ **STATUT DU DISJONCTEUR :** {details}")
+            elif "*" in operateur:
+                res = num_a * num_b
+                st.success(f"**RÉSULTAT DE LA MULTIPLICATION :** {res}")
+                
+            elif "/" in operateur:
+                if num_b == 0:
+                    st.error("⚠️ Division par zéro impossible.")
                 else:
-                    st.warning(f"⚙️ **STATUT DU DISJONCTEUR :** {details}")
+                    montant_net, part_nette, details = chercher_extension_base10(a_clean, b_clean, max_profondeur)
+                    
+                    st.metric(label="MOTEUR ENTRÉE SÉCURISÉ (NUMÉRATEUR AJUSTÉ)", value=montant_net)
+                    st.metric(label="RÉPARTITION EXACTE PAR PERSONNE", value=part_nette)
+                    
+                    if "Fermeture réussie" in details:
+                        st.success(f"⚙️ **STATUT DU DISJONCTEUR :** {details}")
+                    else:
+                        st.warning(f"⚙️ **STATUT DU DISJONCTEUR :** {details}")
 
 st.divider()
 st.caption("© 2026 - Suite de Produits Algorithmiques J.C.R.C — Déploiement Agile Streamlit Cloud.")
+
