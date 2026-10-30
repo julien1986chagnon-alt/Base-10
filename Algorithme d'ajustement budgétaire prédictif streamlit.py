@@ -1,14 +1,17 @@
-import streamlit as as_st # Conservé selon votre import d'origine
 import streamlit as st
 import time
 
+# La configuration de la page doit être la TOUTE PREMIÈRE commande Streamlit exécutée
 st.set_page_config(
     page_title="Algorithme d'ajustement budgétaire prédictif",
     page_icon="📊",
     layout="centered"
 )
 
-# Initialisation des variables d'état
+# Alias pour préserver votre compatibilité historique si nécessaire
+as_st = st
+
+# Initialisation des variables d'état (Session State)
 if "calc_triggered" not in st.session_state:
     st.session_state.calc_triggered = False
     st.session_state.calc_type = None
@@ -69,7 +72,7 @@ def chercher_extension_base10(num_str, dmn_str, _profondeur):
 
 
 # ==========================================
-# INTERFACE GRAPHIQUE STREAMLIT TRADUCTION-SAFE
+# INTERFACE GRAPHIQUE STREAMLIT
 # ==========================================
 
 st.title("Algorithme d'ajustement budgétaire prédictif")
@@ -124,7 +127,6 @@ if st.session_state.calc_triggered:
     st.write("### Résultats de l'analyse")
     
     if not (a_clean.isdigit() and b_clean.isdigit()):
-        # Utilisation de balises HTML avec protection de traduction pour isoler le message
         st.markdown('<div translate="no" style="color:#ff4b4b; padding:10px; border-radius:5px; background-color:rgba(255,75,75,0.1)">⚠️ Veuillez entrer uniquement des nombres entiers positifs.</div>', unsafe_allow_html=True)
     else:
         # Traitement Onglet 1
@@ -135,7 +137,6 @@ if st.session_state.calc_triggered:
             else:
                 q_ajuste, p_indiv, stat = chercher_extension_base10(a_clean, b_clean, data["prof"])
                 
-                # Encapsulation stricte pour bloquer les interférences de Google Traduction
                 st.markdown(f'<div translate="no" style="padding:10px; background:#f0f2f6; border-radius:5px; margin-bottom:10px;"><strong>Statut :</strong> {stat}</div>', unsafe_allow_html=True)
                 st.markdown(f'<div translate="no" style="color:#09ab3b; padding:10px; border-radius:5px; background-color:rgba(9,171,59,0.1); margin-bottom:10px;"><strong>RESULTAT :</strong> {q_ajuste}</div>', unsafe_allow_html=True)
                 st.markdown(f'<div translate="no" style="color:#09ab3b; padding:10px; border-radius:5px; background-color:rgba(9,171,59,0.1);"><strong>PART INDIVIDUELLE :</strong> {p_indiv}</div>', unsafe_allow_html=True)
