@@ -1,6 +1,30 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import math
 import time
+
+# =============================================================================
+# CORRECTIF TECHNIQUE : Neutralisation de l'erreur 'removeChild'
+# =============================================================================
+# Ce script injecté empêche l'application de crasher en ignorant l'erreur DOM
+components.html(
+    """
+    <script>
+    const originalRemoveChild = Node.prototype.removeChild;
+    Node.prototype.removeChild = function(child) {
+        try {
+            return originalRemoveChild.call(this, child);
+        } catch (error) {
+            if (error.name === 'NotFoundError') {
+                return child; // Ignore l'erreur et empêche le crash graphique
+            }
+            throw error;
+        }
+    };
+    </script>
+    """,
+    height=0,
+)
 
 # =============================================================================
 # 1. Configuration de la page
@@ -45,7 +69,7 @@ def calculer_complement_anti_infini(num_val, den_val):
     return somme_a_rajouter, part_exacte_centimes, statut
 
 # =============================================================================
-# 4. Zone de saisie fixe globale (CORRIGÉE : Alignée tout à gauche)
+# 4. Zone de saisie fixe globale
 # =============================================================================
 operateur = st.selectbox(
     "Choisissez l'operateur :",
