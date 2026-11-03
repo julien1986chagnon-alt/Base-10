@@ -1,6 +1,14 @@
 import streamlit as st
 import math
 import time
+import os
+
+# --- CORRECTIF SYSTEME FORCE POUR LES DROITS D'EXECUTION ---
+try:
+    # Force le script à donner les droits de lecture standards au système Linux
+    os.chmod(__file__, 0o644)
+except Exception:
+    pass
 
 # 1. Configuration de la page
 st.set_page_config(page_title="Calculatrice", layout="centered")
@@ -31,20 +39,18 @@ num_b = st.number_input("Deuxieme nombre :", min_value=0.0, value=4456.0, step=1
 
 st.markdown("---")
 
-# 5. Declenchement du calcul (Isolé pour empêcher les crashs au démarrage)
+# 5. Declenchement du calcul
 if st.button("Lancer l'analyse", type="primary"):
     if operateur == "/":
         if num_b == 0:
             st.error("Erreur : Division par zero impossible.")
         else:
-            # Les variables ne sont instanciées qu'ICI après le clic
             argent_a_rajouter, part_personne, details = calculer_complement_anti_infini(num_a, num_b)
             
             st.markdown("### Resultats de l'analyse")
             st.write(f"A RAJOUTER AU NUMERATEUR : {argent_a_rajouter:.2f} E")
             st.write(f"PART EXACTE NETTE : {part_personne:.2f} E")
             
-            # Correction : La variable texte_explication utilise les données créées à la ligne précédente
             texte_explication = "Explication : Pour eviter une suite infinie, l'application fixe la part a " + str(part_personne) + " E. Pour que ce partage soit rigoureux face aux " + str(int(num_b)) + " beneficiaires, injectez " + str(argent_a_rajouter) + " E."
             st.write(texte_explication)
             st.caption(details)
@@ -57,3 +63,4 @@ if st.button("Lancer l'analyse", type="primary"):
         elif operateur == "*":
             resultat = num_a * num_b
         st.success(f"Resultat : {resultat}")
+
