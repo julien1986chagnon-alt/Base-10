@@ -1,14 +1,6 @@
 import streamlit as st
 import math
 import time
-import os
-
-# --- CORRECTIF SYSTEME FORCE POUR LES DROITS D'EXECUTION ---
-try:
-    # Force le script à donner les droits de lecture standards au système Linux
-    os.chmod(__file__, 0o644)
-except Exception:
-    pass
 
 # 1. Configuration de la page
 st.set_page_config(page_title="Calculatrice", layout="centered")
@@ -51,8 +43,11 @@ if st.button("Lancer l'analyse", type="primary"):
             st.write(f"A RAJOUTER AU NUMERATEUR : {argent_a_rajouter:.2f} E")
             st.write(f"PART EXACTE NETTE : {part_personne:.2f} E")
             
-            texte_explication = "Explication : Pour eviter une suite infinie, l'application fixe la part a " + str(part_personne) + " E. Pour que ce partage soit rigoureux face aux " + str(int(num_b)) + " beneficiaires, injectez " + str(argent_a_rajouter) + " E."
-            st.write(texte_explication)
+            # Bloc de texte unique et robuste pour la traduction Google Chrome
+            st.markdown(f"""
+            Explication : Pour eviter une suite infinie, l'application fixe la part a **{part_personne} E**. 
+            Pour que ce partage soit rigoureux face aux **{int(num_b)}** beneficiaires, injectez **{argent_a_rajouter} E**.
+            """)
             st.caption(details)
     else:
         resultat = 0.0
@@ -63,4 +58,3 @@ if st.button("Lancer l'analyse", type="primary"):
         elif operateur == "*":
             resultat = num_a * num_b
         st.success(f"Resultat : {resultat}")
-
