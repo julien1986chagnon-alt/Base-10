@@ -6,62 +6,62 @@ import time
 # 1. Configuration de la page
 # =============================================================================
 st.set_page_config(
-    page_title="Calculatrice Évolutive 4.1.1.1",
+    page_title="Calculatrice Evolutive 4.1.1.1",
     layout="centered"
 )
 
 # =============================================================================
-# 2. En-tête textuel
+# 2. En-tête textuel standard sans caracteres speciaux
 # =============================================================================
-st.title("Calculatrice Évolutive 4.1.1.1")
+st.title("Calculatrice Evolutive 4.1.1.1")
 st.subheader("Moteur Complet Base 10")
-st.caption("Développé par : Chagnon Julien Christian Robert - Tous droits réservés")
+st.caption("Developpe par : Chagnon Julien Christian Robert - Tous droits reserves")
 st.markdown("---")
 
 # =============================================================================
-# 3. Fonction de calcul budgétaire anti-infinie
+# 3. Fonction de calcul budgetaire anti-infinite
 # =============================================================================
 def calculer_complement_anti_infini(num_val, den_val):
     if den_val == 0:
-        return 0.0, 0.0, "Division par zéro impossible"
+        return 0.0, 0.0, "Division par zero impossible"
         
     temps_debut = time.time()
     
-    # Calcul de la part brute théorique par personne
+    # Calcul de la part brute theorique par personne
     part_brute = num_val / den_val
     
-    # On détermine la part propre au centime supérieur (2 décimales max)
+    # On determine la part propre au centime superieur (2 decimales max)
     part_exacte_centimes = math.ceil(part_brute * 100) / 100
     
-    # Calcul de la somme totale qu'il faudrait avoir au départ
+    # Calcul de la somme totale qu'il faudrait avoir au depart
     somme_totale_necessaire = part_exacte_centimes * den_val
     
-    # Ce qu'il faut rajouter exactement dans le numérateur de départ
+    # Ce qu'il faut rajouter exactement dans le numerateur de depart
     somme_a_rajouter = somme_totale_necessaire - num_val
     
     duree = time.time() - temps_debut
-    statut = f"Analyse réussie en {duree:.6f} secondes."
+    statut = f"Analyse reussie en {duree:.6f} secondes."
     
     return somme_a_rajouter, part_exacte_centimes, statut
 
 # =============================================================================
-# 4. Zone de saisie globale (Alignée à gauche)
+# 4. Zone de saisie fixe globale (CORRIGÉE : Alignée tout à gauche)
 # =============================================================================
 operateur = st.selectbox(
-    "Choisissez l'opérateur :",
+    "Choisissez l'operateur :",
     options=["/", "+", "-", "*"],
     index=0
 )
 
 num_a = st.number_input(
-    "Premier nombre (Numérateur pour la division) :", 
+    "Premier nombre (Numerateur pour la division) :", 
     min_value=0.0, 
     value=55555.0, 
     step=1.0
 )
 
 num_b = st.number_input(
-    "Deuxième nombre (Dénominateur / Diviseur) :", 
+    "Deuxieme nombre (Denominateur / Diviseur) :", 
     min_value=0.0, 
     value=4456.0, 
     step=1.0
@@ -70,35 +70,40 @@ num_b = st.number_input(
 st.markdown("---")
 
 # =============================================================================
-# 5. Déclenchement du calcul et affichage des résultats
+# 5. Declenchement du calcul
 # =============================================================================
 if st.button("Lancer l'analyse", type="primary"):
     
-    # --- Cas spécifique de la division ---
+    # --- Cas de la division ---
     if operateur == "/":
         if num_b == 0:
-            st.error("Erreur : Division par zéro impossible.")
+            st.error("Erreur : Division par zero impossible.")
         else:
-            # Appel de la fonction de calcul
+            # Execution du calcul
             argent_a_rajouter, part_personne, details = calculer_complement_anti_infini(num_a, num_b)
             
-            st.markdown("### 📊 Résultats de l'analyse")
-            st.write(f"**A RAJOUTER AU NUMÉRATEUR DE DÉPART :** {argent_a_rajouter:.2f} €")
-            st.write(f"**PART EXACTE NETTE PAR PERSONNE :** {part_personne:.2f} €")
+            # Sécurisation des types pour éviter le crash de l'interface Streamlit
+            val_argent = float(argent_a_rajouter)
+            val_part = float(part_personne)
+            val_beneficiaires = int(num_b)
+            
+            st.markdown("### 📊 Resultats de l'analyse")
+            st.write(f"**A RAJOUTER AU NUMERATEUR DE DEPART :** {val_argent:.2f} €")
+            st.write(f"**PART EXACTE NETTE PAR PERSONNE :** {val_part:.2f} €")
             st.markdown("---")
             
-            # Utilisation de triple guillemets pour éviter les bugs d'affichage de texte sur Streamlit
-            st.write(f"""
-            **Explication budgétaire :** Pour éviter une suite infinie de chiffres après la virgule, 
-            l'application fixe la part de chacun à **{part_personne:.2f} €**.
+            # Affichage en un seul bloc Markdown propre pour stabiliser le rendu HTML
+            st.markdown(f"""
+            **Explication budgetaire :** Pour eviter une suite infinie de chiffres apres la virgule, 
+            l'application fixe la part de chacun a **{val_part:.2f} €**.
             
-            Pour que ce partage soit parfaitement rigoureux face aux **{int(num_b)}** bénéficiaires, 
-            vous devez injecter **{argent_a_rajouter:.2f} €** supplémentaires à votre somme de départ.
+            Pour que ce partage soit parfaitement rigoureux face aux **{val_beneficiaires}** beneficiaires, 
+            vous devez injecter **{val_argent:.2f} €** supplementaires a votre somme de depart.
             """)
             
             st.caption(f"Statut technique : {details}")
             
-    # --- Cas des autres opérations standards ---
+    # --- Cas des autres operations standards ---
     else:
         resultat = 0.0
         if operateur == "+":
@@ -108,5 +113,5 @@ if st.button("Lancer l'analyse", type="primary"):
         elif operateur == "*":
             resultat = num_a * num_b
             
-        st.success(f"Résultat du calcul standard : {resultat}")
+        st.success(f"Resultat du calcul standard : {resultat}")
 
