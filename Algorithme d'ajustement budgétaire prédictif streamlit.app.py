@@ -2,13 +2,16 @@ import streamlit as st
 import math
 import time
 
+# 1. Configuration de la page
 st.set_page_config(page_title="Calculatrice", layout="centered")
 
+# 2. En-tête textuel standard
 st.title("Calculatrice Evolutive 4.1.1.1")
 st.subheader("Moteur Complet Base 10")
 st.caption("Developpe par : Chagnon Julien Christian Robert")
 st.markdown("---")
 
+# 3. Fonction de calcul budgetaire anti-infinite
 def calculer_complement_anti_infini(num_val, den_val):
     if den_val == 0:
         return 0.0, 0.0, "Division par zero impossible"
@@ -21,23 +24,27 @@ def calculer_complement_anti_infini(num_val, den_val):
     statut = f"Analyse reussie en {duree:.6f} secondes."
     return somme_a_rajouter, part_exacte_centimes, statut
 
+# 4. Zone de saisie fixe globale
 operateur = st.selectbox("Opereur :", options=["/", "+", "-", "*"], index=0)
 num_a = st.number_input("Premier nombre :", min_value=0.0, value=55555.0, step=1.0)
 num_b = st.number_input("Deuxieme nombre :", min_value=0.0, value=4456.0, step=1.0)
 
 st.markdown("---")
 
+# 5. Declenchement du calcul (Isolé pour empêcher les crashs au démarrage)
 if st.button("Lancer l'analyse", type="primary"):
     if operateur == "/":
         if num_b == 0:
             st.error("Erreur : Division par zero impossible.")
         else:
+            # Les variables ne sont instanciées qu'ICI après le clic
             argent_a_rajouter, part_personne, details = calculer_complement_anti_infini(num_a, num_b)
             
             st.markdown("### Resultats de l'analyse")
             st.write(f"A RAJOUTER AU NUMERATEUR : {argent_a_rajouter:.2f} E")
             st.write(f"PART EXACTE NETTE : {part_personne:.2f} E")
             
+            # Correction : La variable texte_explication utilise les données créées à la ligne précédente
             texte_explication = "Explication : Pour eviter une suite infinie, l'application fixe la part a " + str(part_personne) + " E. Pour que ce partage soit rigoureux face aux " + str(int(num_b)) + " beneficiaires, injectez " + str(argent_a_rajouter) + " E."
             st.write(texte_explication)
             st.caption(details)
@@ -50,4 +57,3 @@ if st.button("Lancer l'analyse", type="primary"):
         elif operateur == "*":
             resultat = num_a * num_b
         st.success(f"Resultat : {resultat}")
-
