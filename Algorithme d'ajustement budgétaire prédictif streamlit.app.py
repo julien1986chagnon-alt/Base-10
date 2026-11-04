@@ -18,32 +18,33 @@ num_b = st.number_input("Deuxième nombre (Dénominateur) :", value=4456.0)
 st.markdown("---")
 st.markdown("### Résultats en direct")
 
-# 4. Logique de calcul sectorisée et corrigée
-if operateur == "/":
-    if num_b == 0:
-        st.error("Division par zéro impossible")
-    else:
-        # Calculs budgétaires spécifiques à la division
-        part_brute = num_a / num_b
-        part_particulier = math.ceil(part_brute * 100) / 100
-        somme_totale_parametre = part_particulier * num_b
-        somme_a_repartir = somme_totale_parametre - num_a
+# 4. Logique de calcul directe (sans bouton, sans fonction externe)
+if operateur == "/" and num_b == 0:
+    st.error("Division par zéro impossible")
+else:
+    # Calculs directs
+    part_brute = num_a / num_b
+    part_poste_centimes = math.ceil(part_brute * 100) / 100
+    somme_totale_parametre = part_poste_centimes * num_b
+    somme_a_repartir = somme_totale_parametre - num_a
+    
+    # Affichage basique et ultra-stable
+    st.success(f"À COMPTER AU NUMÉRATEUR : {somme_a_repartir:.2f} €")
+    st.success(f"PART STRICTE NETTE PAR PERSONNE : {part_poste_centimes:.2f} €")
+    
+    st.markdown("""Explication : Pour éviter une suite infinie, la part est fixée à part_poste_centimes. 
+    Pour (num_b) bénéficiaires, il faut rajouter (somme_a_repartir).""")
+
+    # Calcul alternatif selon l'opérateur
+    resultat = 0.0
+    if operateur == "/":
+        resultat = num_a / num_b
+    elif operateur == "*":
+        resultat = num_a * num_b
+    elif operateur == "-":
+        resultat = num_a - num_b
+    elif operateur == "+":
+        resultat = num_a + num_b
         
-        # Affichage des métriques budgétaires
-        st.success(f"À COMPTER AU NUMÉRATEUR : {somme_a_repartir:.2f} €")
-        st.success(f"PART STRICTE NETTE PAR PERSONNE : {part_particulier:.2f} €")
-        st.markdown("---")
-        st.success(f"Résultat de la division brute : {part_brute}")
-
-elif operateur == "*":
-    resultat = num_a * num_b
-    st.success(f"Résultat de la multiplication : {resultat}")
-
-elif operateur == "-":
-    resultat = num_a - num_b
-    st.success(f"Résultat de la soustraction : {resultat}")
-
-elif operateur == "+":
-    resultat = num_a + num_b
-    st.success(f"Résultat de l'addition : {resultat}")
+    st.success(f"Résultats : {resultat}")
 
